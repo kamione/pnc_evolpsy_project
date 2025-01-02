@@ -249,17 +249,15 @@ sect_properties <- prop_section(
 
 table01 <- preprocessed_cnb_persistent_dat %>% 
     filter(timepoint == 1) %>% 
-    select(oisPS, n_scans, age_at_scan, sex, race3, trauma_T1, envSES,
-           PSYCHOSIS_CorrTraits) %>%
+    select(oisPS, n_scans, age_at_scan, sex, race3, trauma_T1, envSES) %>%
     tbl_summary(
         by = oisPS,
         label = list(
             sex ~ "Sex",
-            age_at_scan ~ "Age at Scan",
+            age_at_scan ~ "Age at Scan (Baseline)",
             race3 ~ "Race",
             trauma_T1 ~ "Traumatic Stress Load (Baseline)",
             envSES ~ "Environmental SES (Baseline)",
-            PSYCHOSIS_CorrTraits ~ "Psychosis Factor Scores (Baseline)",
             n_scans ~ "Number of Scans"
         ),
         statistic = list(all_continuous() ~ "{mean} ({sd})"),
@@ -300,7 +298,7 @@ stable01 <- preprocessed_cnb_persistent_dat$acq_parameters %>%
     arrange(ModelName) %>% 
     as_flextable() %>% 
     hline(i = 1, part = "header", border = fp_border(color = "grey30", width = 1.5)) %>% 
-    #delete_rows(i = 2, part = "header") %>% 
+    delete_rows(i = 2, part = "header") %>% 
     delete_part(part = "footer") %>% 
     autofit() %>% 
     fit_to_width(10) 

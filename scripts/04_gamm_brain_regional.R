@@ -122,7 +122,7 @@ vol_b <- res_tables_age %>%
 vol_c <- res_tables_agebygroup %>% 
     plot_ggseg_brain(
         fill = "statistic", 
-        title = "C. Age x Group",
+        title = "C. Age by Group",
         min = 0,
         max = 9,
         break_int = 2
@@ -260,7 +260,7 @@ sgmv_b <- sgmv_res_tables_age %>%
 sgmv_c <- sgmv_res_tables_agebypsy %>% 
     plot_ggseg_brain(
         fill = "statistic",
-        title = "C. Age x Group",
+        title = "C. Age by Group",
         atlas = "aseg",
         min = 0,
         max = 6,

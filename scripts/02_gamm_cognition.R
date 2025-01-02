@@ -108,9 +108,9 @@ cog_dev_res_table <- cog_dev_res %>%
     rename(statistic = `t / F`) %>% 
     pivot_wider(names_from = Parameter, values_from = statistic:p) %>% 
     mutate(
-        padj_oisPS.L = p.adjust(p_oisPS.L, "bonferroni"),
-        `padj_s(age_at_scan)` = p.adjust(`p_s(age_at_scan)`, "bonferroni"),
-        `padj_s(age_at_scan):oisPSrecurrent PS` = p.adjust(`p_s(age_at_scan):oisPSrecurrent PS`, "bonferroni")
+        padj_oisPS.L = p.adjust(p_oisPS.L, "fdr"),
+        `padj_s(age_at_scan)` = p.adjust(`p_s(age_at_scan)`, "fdr"),
+        `padj_s(age_at_scan):oisPSrecurrent PS` = p.adjust(`p_s(age_at_scan):oisPSrecurrent PS`, "fdr")
     ) %>% 
     select(1, 2, 5, 8, 3, 6, 9, 4, 7, 10) %>% # reorder
     mutate(
@@ -129,7 +129,7 @@ cog_dev_res_table <- cog_dev_res %>%
         digits = 3
     ) %>% 
     add_header_row(
-        values = c("", "Group (TD - recurrent PS)", "s(Age)", "Group x s(Age)"), 
+        values = c("", "Group (TD - recurrent PS)", "s(Age)", "s(Age) by Group"), 
         colwidths = c(1, 3, 3, 3)
     ) %>% 
     set_header_labels(
@@ -147,7 +147,7 @@ cog_dev_res_table <- cog_dev_res %>%
     compose(
         i = 2, j = c(4, 7, 10), part = "header",
         value = as_paragraph(
-            "p", as_sub("Bonferroni")
+            "q"
         )
     ) %>% 
     compose(
@@ -207,9 +207,9 @@ cog_dev_sens_res_table <- cog_dev_sens_res %>%
     rename(statistic = `t / F`) %>% 
     pivot_wider(names_from = Parameter, values_from = statistic:p) %>% 
     mutate(
-        padj_oisPS.L = p.adjust(p_oisPS.L, "bonferroni"),
-        `padj_s(age_at_scan)` = p.adjust(`p_s(age_at_scan)`, "bonferroni"),
-        `padj_s(age_at_scan):oisPSrecurrent PS` = p.adjust(`p_s(age_at_scan):oisPSrecurrent PS`, "bonferroni")
+        padj_oisPS.L = p.adjust(p_oisPS.L, "fdr"),
+        `padj_s(age_at_scan)` = p.adjust(`p_s(age_at_scan)`, "fdr"),
+        `padj_s(age_at_scan):oisPSrecurrent PS` = p.adjust(`p_s(age_at_scan):oisPSrecurrent PS`, "fdr")
     ) %>% 
     select(1, 2, 5, 8, 3, 6, 9, 4, 7, 10) %>% # reorder
     mutate(
@@ -228,7 +228,7 @@ cog_dev_sens_res_table <- cog_dev_sens_res %>%
         digits = 3
     ) %>% 
     add_header_row(
-        values = c("", "Group (TD - recurrent PS)", "s(Age)", "Group x s(Age)"), 
+        values = c("", "Group (TD - recurrent PS)", "s(Age)", "s(Age) by Group"), 
         colwidths = c(1, 3, 3, 3)
     ) %>% 
     set_header_labels(
@@ -246,7 +246,7 @@ cog_dev_sens_res_table <- cog_dev_sens_res %>%
     compose(
         i = 2, j = c(4, 7, 10), part = "header",
         value = as_paragraph(
-            "p", as_sub("Bonferroni")
+            "q"
         )
     ) %>% 
     compose(
