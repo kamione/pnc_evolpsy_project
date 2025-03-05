@@ -184,3 +184,72 @@ sgmv_sens_traj <- plot_smoothbyfactor(
 )
 
 parameters::model_parameters(sgmv_full_sens_fit)
+
+
+# Sensitivity Analysis 2 -------------------------------------------------------
+confounds_sens <- "sex + race3 + timepoint + acq_type"
+
+cgmv_full_sens_formula <- as.formula(
+    glue("gmv ~ oisPS + s(age_at_scan, k = 4, fx = TRUE) + s(age_at_scan, by = oisPS, k = 4, fx = TRUE) + {confounds_sens}")
+)
+cgmv_full_sens_fit <- gamm(
+    formula = cgmv_full_sens_formula,
+    random = list(bblid =~ 1),
+    data = preprocessed_dat %>% filter(!age_at_scan < 12.5),
+    REML = TRUE
+)
+parameters::model_parameters(cgmv_full_sens_fit)
+
+cgmv_reduced_sens_formula <- as.formula(
+    glue("gmv ~ oisPS + s(age_at_scan, k = 4, fx = TRUE) + {confounds_sens}")
+)
+cgmv_reduced_sens_fit <- gamm(
+    formula = cgmv_reduced_sens_formula,
+    random = list(bblid =~ 1),
+    data = preprocessed_dat %>% filter(!age_at_scan < 12.5),
+    REML = TRUE
+)
+get_gamm_partialR2(cgmv_full_sens_fit, cgmv_reduced_sens_fit)
+
+plot_smoothbyfactor(
+    modobj = cgmv_full_sens_fit, 
+    series = "age_at_scan", 
+    by = "oisPS", 
+    subjid = "bblid",
+    title = "B. Subcortical gray matter volume",
+    title_font_size = 18
+)
+
+## sgmv
+sgmv_full_sens_formula <- as.formula(
+    glue("sgmv ~ oisPS + s(age_at_scan, k = 4, fx = TRUE) + s(age_at_scan, k = 4, by = oisPS, fx = TRUE) + {confounds_sens}")
+)
+sgmv_full_sens_fit <- gamm(
+    formula = sgmv_full_sens_formula,
+    random = list(bblid =~ 1),
+    data = preprocessed_dat %>% filter(!age_at_scan < 12.5),
+    REML = TRUE
+)
+parameters::model_parameters(sgmv_full_sens_fit)
+
+sgmv_reduced_sens_formula <- as.formula(
+    glue("sgmv ~ oisPS + s(age_at_scan, k = 4, fx = TRUE) + {confounds_sens}")
+)
+sgmv_reduced_sens_fit <- gamm(
+    formula = sgmv_reduced_sens_formula,
+    random = list(bblid =~ 1),
+    data = preprocessed_dat %>% filter(!age_at_scan < 12.5),
+    REML = TRUE
+)
+get_gamm_partialR2(sgmv_full_sens_fit, sgmv_reduced_sens_fit)
+
+plot_smoothbyfactor(
+    modobj = sgmv_full_sens_fit, 
+    series = "age_at_scan", 
+    by = "oisPS", 
+    subjid = "bblid",
+    title = "B. Subcortical gray matter volume",
+    title_font_size = 18
+)
+
+parameters::model_parameters(sgmv_full_sens_fit)

@@ -273,3 +273,103 @@ cog_dev_sens_res_table %>%
         pr_section = sect_properties
     )
 
+
+# Sensitivity Analyses 2 -------------------------------------------------------
+cog_dev_sens_res <- list()
+cog_dev_sens_figs <- list()
+
+confounds_sens <- "sex + race3 + timepoint"
+
+# filter out 
+for (iter in 1:6) {
+    forumla_cnb <- as.formula(
+        glue(
+            "{cog_labels[iter]} ~ oisPS + s(age_at_scan, k = 4, fx = TRUE) + 
+             s(age_at_scan, k = 4, by = oisPS, fx = TRUE) + {confounds_sens}"
+        )
+    )
+    mod <- gamm(
+        formula = forumla_cnb,
+        random = list(bblid =~ 1),
+        data = preprocessed_dat %>% filter(!age_at_scan < 12.5),
+        REML = TRUE
+    )
+    cog_dev_sens_res[[iter]] <- mod %>% 
+        parameters::parameters() %>% 
+        as_tibble() %>% 
+        mutate(label = cog_labels_titles[iter], .before = "Parameter")
+    
+}
+
+cog_dev_sens_res_table <- cog_dev_sens_res %>% 
+    bind_rows() %>% 
+    filter(Parameter %in% c("oisPS.L", "s(age_at_scan)", "s(age_at_scan):oisPSrecurrent PS")) %>% 
+    select(label, Parameter, `t / F`, p) %>% 
+    rename(statistic = `t / F`) %>% 
+    pivot_wider(names_from = Parameter, values_from = statistic:p) %>% 
+    mutate(
+        padj_oisPS.L = p.adjust(p_oisPS.L, "fdr"),
+        `padj_s(age_at_scan)` = p.adjust(`p_s(age_at_scan)`, "fdr"),
+        `padj_s(age_at_scan):oisPSrecurrent PS` = p.adjust(`p_s(age_at_scan):oisPSrecurrent PS`, "fdr")
+    ) %>% 
+    select(1, 2, 5, 8, 3, 6, 9, 4, 7, 10) %>% # reorder
+    mutate(
+        `p_s(age_at_scan)` = "< 0.001",
+        `padj_s(age_at_scan)` = "< 0.001"
+    ) %>% 
+    flextable() %>% 
+    colformat_double(
+        j = c(2, 5, 8),
+        big.mark = ",", 
+        digits = 2
+    ) %>% 
+    colformat_double(
+        j = c(3, 4, 9, 10),
+        big.mark = ",", 
+        digits = 3
+    ) %>% 
+    add_header_row(
+        values = c("", "Group (TD - recurrent PS)", "s(Age)", "s(Age) by Group"), 
+        colwidths = c(1, 3, 3, 3)
+    ) %>% 
+    set_header_labels(
+        label = "Term",
+        statistic_oisPS.L = "t",
+        `statistic_s(age_at_scan)` = "F",
+        `statistic_s(age_at_scan):oisPSrecurrent PS` = "F"
+    ) %>% 
+    compose(
+        i = 2, j = c(3, 6, 9), part = "header",
+        value = as_paragraph(
+            "p"
+        )
+    ) %>% 
+    compose(
+        i = 2, j = c(4, 7, 10), part = "header",
+        value = as_paragraph(
+            "q"
+        )
+    ) %>% 
+    compose(
+        i = 3, j = 3, part = "body",
+        value = as_paragraph(
+            "< 0.001"
+        )
+    ) %>% 
+    align(align = "center", part = "header") %>% 
+    bold(part = "header") %>% 
+    italic(i = 2, italic = TRUE, part = "header") %>% 
+    bold(~ padj_oisPS.L < 0.05, c(4)) %>% 
+    bold(~ `padj_s(age_at_scan)` == "< 0.001", c(7)) %>% 
+    add_footer_lines(
+        "^ Models controlling for sex, race, time point; significant results are bold"
+    ) %>% 
+    autofit()
+
+cog_dev_sens_res_table
+
+cog_dev_sens_res_table %>% 
+    save_as_docx(
+        path = here("outputs", "tables", "cog_dev_sens2_res_table.docx"),
+        pr_section = sect_properties
+    )

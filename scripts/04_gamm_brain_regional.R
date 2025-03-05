@@ -419,3 +419,109 @@ sgmv_res_tables_agebypsy %>%
         filename = here("outputs", "tables", "sens_sgmv_agebygroup_effect.docx")
     )
 
+# Sensitive Analyses 2 ---------------------------------------------------------
+fitted_sens_models <- list()
+res_sens_tables <- list()
+for (label in dk_labels) {
+    confounds <- "sex + race3 + timepoint + acq_type"
+    forumla_1 <- as.formula(glue("{label}_volume ~ oisPS + s(age_at_scan, k = 4, fx = TRUE) + s(age_at_scan, by = oisPS, k = 4, fx = TRUE) + {confounds}"))
+    fit <- gamm(
+        formula = forumla_1,
+        random = list(bblid =~ 1),
+        data = preprocessed_dat %>% filter(!age_at_scan < 12.5),
+        REML = TRUE
+    )
+    fitted_sens_models[[label]] <- fit
+    res_table <- fit$gam %>% 
+        tidy(parametric = TRUE) %>% 
+        bind_rows(tidy(fit$gam)) %>% 
+        select(term, statistic, p.value) %>% 
+        mutate(label = label, .before = term)
+    res_sens_tables[[label]] = res_table
+}
+res_sens_tables_group <- res_sens_tables %>% 
+    bind_rows() %>% 
+    filter(term == "oisPS.L") %>% 
+    mutate(p.value.adj = p.adjust(p.value, method = "fdr"))
+res_sens_tables_age <- res_sens_tables %>%
+    bind_rows() %>% 
+    filter(term == "s(age_at_scan)") %>% 
+    mutate(p.value.adj = p.adjust(p.value, method = "fdr"))
+res_sens_tables_agebygroup <- res_sens_tables %>% 
+    bind_rows() %>% 
+    filter(term == "s(age_at_scan):oisPSrecurrent PS") %>% 
+    mutate(p.value.adj = p.adjust(p.value, method = "fdr"))
+
+res_sens_tables_group %>% 
+    select(-2) %>% 
+    .convert_df2ft(
+        footnote = "The model accounted for sex, race, timepoint, sequence ID as control variables.",
+        filename = here("outputs", "tables", "sens2_cgmv_group_effect.docx")
+    )
+res_sens_tables_age %>% 
+    select(-2) %>% 
+    .convert_df2ft(
+        footnote = "The model accounted for sex, race, timepoint, sequence ID as control variables.",
+        filename = here("outputs", "tables", "sens2_cgmv_age_effect.docx")
+    )
+res_sens_tables_agebygroup %>% 
+    select(-2) %>% 
+    .convert_df2ft(
+        footnote = "The model accounted for sex, race, timepoint, sequence ID, as control variables.",
+        filename = here("outputs", "tables", "sens2_cgmv_agebygroup_effect.docx")
+    )
+
+
+sgmv_sens_fitted_models <- list()
+sgmv_sens_res_tables <- list()
+for (label in aseg_labels) {
+    confounds <- "sex + race3 + timepoint + acq_type"
+    forumla_1 <- as.formula(glue("{label} ~ oisPS + s(age_at_scan, k = 4, fx = TRUE) + s(age_at_scan, by = oisPS, k = 4, fx = TRUE) + {confounds}"))
+    fit_ <- gamm(
+        formula = forumla_1,
+        random = list(bblid =~ 1),
+        data = preprocessed_dat %>% filter(!age_at_scan < 12.5),
+        REML = TRUE
+    )
+    sgmv_sens_fitted_models[[label]] <- fit_
+    res_table <- fit_$gam %>% 
+        tidy(parametric = TRUE) %>% 
+        bind_rows(tidy(fit_$gam)) %>% 
+        select(term, statistic, p.value) %>% 
+        mutate(label = label, .before = term)
+    sgmv_sens_res_tables[[label]] = res_table
+}
+sgmv_res_tables_psy <- sgmv_sens_res_tables %>% 
+    bind_rows() %>% 
+    filter(term == "oisPS.L") %>% 
+    mutate(label = aseg_labels_orginal) %>% 
+    mutate(p.value.adj = p.adjust(p.value, method = "fdr"))
+sgmv_res_tables_age <- sgmv_sens_res_tables %>%
+    bind_rows() %>% 
+    filter(term == "s(age_at_scan)") %>% 
+    mutate(label = aseg_labels_orginal) %>%
+    mutate(p.value.adj = p.adjust(p.value, method = "fdr"))
+sgmv_res_tables_agebypsy <- sgmv_sens_res_tables %>% 
+    bind_rows() %>% 
+    filter(term == "s(age_at_scan):oisPSrecurrent PS") %>% 
+    mutate(label = aseg_labels_orginal) %>%
+    mutate(p.value.adj = p.adjust(p.value, method = "fdr"))
+
+sgmv_res_tables_psy %>% 
+    select(-2) %>% 
+    .convert_df2ft(
+        footnote = "The model accounted for sex, race, timepoint, sequence ID as control variables.",
+        filename = here("outputs", "tables", "sens2_sgmv_group_effect.docx")
+    )
+sgmv_res_tables_age %>% 
+    select(-2) %>% 
+    .convert_df2ft(
+        footnote = "The model accounted for sex, race, timepoint, sequence ID as control variables.",
+        filename = here("outputs", "tables", "sens2_sgmv_age_effect.docx")
+    )
+sgmv_res_tables_agebypsy %>% 
+    select(-2) %>% 
+    .convert_df2ft(
+        footnote = "The model accounted for sex, race, timepoint, sequence ID as control variables.",
+        filename = here("outputs", "tables", "sens2_sgmv_agebygroup_effect.docx")
+    )
